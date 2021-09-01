@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class LevelManager : MonoBehaviour
 {
@@ -26,6 +27,8 @@ public class LevelManager : MonoBehaviour
     public List<int> selected = new List<int>();
 
     public List<int> matches = new List<int>();
+
+    public UnityEvent whenPlayerWins;
 
     // Start is called before the first frame update
     void Start()
@@ -62,6 +65,12 @@ public class LevelManager : MonoBehaviour
         ResetMaterial(id2);
         resetOnGoing = false;
     }
+
+    private IEnumerator Win()
+    {
+        yield return new WaitForSeconds(timeBeforeReset);
+        whenPlayerWins?.Invoke();
+    }
     public void RevealMaterial(int id)
     {
         if (resetOnGoing == false && !selected.Contains(id) && !matches.Contains(id))
@@ -69,6 +78,7 @@ public class LevelManager : MonoBehaviour
             selected.Add(id);
             Material material = itemMaterial[id];
             items[id].GetComponent<Renderer>().material = material;
+            items[id].HasBeenSelected(true);
         }
         
     }
@@ -76,7 +86,8 @@ public class LevelManager : MonoBehaviour
     public void ResetMaterial (int id)
     {
         items[id].GetComponent<Renderer>().material = defaultMaterial;
-    }
+        items[id].HasBeenSelected(false);
+        }
 
 
 
@@ -89,12 +100,19 @@ public class LevelManager : MonoBehaviour
             {
                 matches.Add(selected[0]);
                 matches.Add(selected[1]);
+                items[selected[0]].HasBeenMatched();
+                items[selected[1]].HasBeenMatched();
+
+                if (matches.Count >= row * col)
+                {
+                    StartCoroutine(Win());
+                }
+
             }
             else
             {
                 StartCoroutine(ResetMaterials(selected[0], selected[1]));
-
-
+                
             }
             selected.Clear();
         }
