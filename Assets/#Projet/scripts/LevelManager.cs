@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+
 public class LevelManager : MonoBehaviour
 {
-    public int row = 3;
-    public int col = 4;
+    private int row;
+    private int col;
 
-    public float gapRow = 1.5f;
-    public float gapCol = 1.5f;
+
+    private float gapRow = 1.5f;
+    private float gapCol = 1.5f;
 
     [Range(0f, 5f)]
-    public float timeBeforeReset = 1f;
+    private float timeBeforeReset = 1f;
     private bool resetOnGoing = false;
 
     public Material[] materials;
@@ -30,9 +32,15 @@ public class LevelManager : MonoBehaviour
 
     public UnityEvent whenPlayerWins;
 
+    private float timer = 0f;
+    
+
     // Start is called before the first frame update
     void Start()
     {
+        col =  PlayerPrefs.GetInt("col",3);
+        row = PlayerPrefs.GetInt("row",4);
+
         items = new ItemBehaviour[row * col];
         int index = 0;
 
@@ -94,6 +102,9 @@ public class LevelManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        timer += Time.deltaTime;
+        
+
         if (selected.Count == 2)
         {
             if(itemMaterial[selected[0]] == itemMaterial[selected[1]])
@@ -106,6 +117,7 @@ public class LevelManager : MonoBehaviour
                 if (matches.Count >= row * col)
                 {
                     StartCoroutine(Win());
+                    PlayerPrefs.SetFloat("timer", timer);
                 }
 
             }
@@ -115,7 +127,11 @@ public class LevelManager : MonoBehaviour
                 
             }
             selected.Clear();
+
         }
+
+
+        
     }
 
     private void GiveMaterials()
